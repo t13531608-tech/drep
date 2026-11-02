@@ -18,6 +18,7 @@
 
   <header class="bg-white border-b border-slate-200 py-4 px-6 flex justify-between items-center shadow-sm">
     <div class="flex items-center gap-2">
+      <!-- الشعار مع نقطة متحركة/نابضة -->
       <div class="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center shadow-md shadow-blue-500/20 relative">
         <div class="absolute w-full h-full rounded-xl bg-blue-400 opacity-75 animate-ping"></div>
         <div class="w-2.5 h-2.5 bg-white rounded-full relative z-10"></div>
@@ -32,7 +33,6 @@
 
   <main class="max-w-xl mx-auto w-full p-4 my-auto">
     
-    <!-- صفحة الـ QR (تظهر فقط للكمبيوتر أو المضيف إذا لم يتم الاتصال) -->
     <div id="step-connect" class="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 text-center space-y-6">
       <div class="space-y-2">
         <h2 class="text-xl font-bold text-slate-900">ربط الجهازين مباشرة</h2>
@@ -51,7 +51,6 @@
       </div>
     </div>
 
-    <!-- صفحة نقل الملفات (تظهر مباشرة عند الاتصال أو التحديث بعد الاتصال) -->
     <div id="step-transfer" class="hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-100 space-y-6">
       <div class="flex items-center justify-between border-b border-slate-100 pb-4">
         <div class="flex items-center gap-3">
@@ -88,75 +87,47 @@
     let peer = null;
     let connection = null;
 
-    function switchToTransferScreen() {
-      document.getElementById('step-connect').classList.add('hidden');
-      document.getElementById('step-transfer').classList.remove('hidden');
-      // حفظ حالة أننا تجاوزنا مرحلة الـ QR في الذاكرة المحلية لهذا الجهاز
-      localStorage.setItem('drop_connected', 'true');
-    }
-
     function initializePeer() {
       const urlParams = new URLSearchParams(window.location.search);
       const targetRoomId = urlParams.get('room');
 
-      // تحديد معرف ثابت للجهاز الحالي لتثبيت الجلسة
-      let myId = localStorage.getItem('drop_my_id');
-      if (!myId) {
-        myId = 'drop-' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('drop_my_id', myId);
-      }
-
-      // إنشاء الاتصال
-      peer = targetRoomId ? new Peer() : new Peer(myId);
+      peer = new Peer();
 
       peer.on('open', (id) => {
         if (targetRoomId) {
-          // إذا كان الجهاز هو الجوال الذي مسح الرمز، يتصل فوراً بالكمبيوتر وينتقل لصفحة النقل
           document.getElementById('peer-id-text').innerText = "جاري الاتصال...";
           connectToDevice(targetRoomId);
         } else {
-          // إذا كان الكمبيوتر
           const roomUrl = `${window.location.origin}${window.location.pathname}?room=${id}`;
-          window.history.replaceState(null, null, `?room=${id}`);
           document.getElementById('peer-id-text').innerText = roomUrl;
           
-          document.getElementById("qrcode").innerHTML = "";
           new QRCode(document.getElementById("qrcode"), {
             text: roomUrl,
             width: 160,
             height: 160
           });
-
-          // إذا كان قد سبق وتم الاتصال مسبقاً قبل التحديث، نظهره في صفحة النقل مباشرة
-          if (localStorage.getItem('drop_connected') === 'true') {
-            switchToTransferScreen();
-          }
         }
       });
 
       peer.on('connection', (conn) => {
         connection = conn;
         setupConnectionEvents();
-        switchToTransferScreen();
       });
 
-      peer.on('error', (err) => {
-        if (err.type === 'unavailable-id') {
-          localStorage.removeItem('drop_my_id');
-          location.reload();
-        }
+      peer.on('error', () => {
+        alert("حدث خطأ في الاتصال.");
       });
     }
 
     function connectToDevice(targetId) {
       connection = peer.connect(targetId);
       setupConnectionEvents();
-      switchToTransferScreen();
     }
 
     function setupConnectionEvents() {
       connection.on('open', () => {
-        switchToTransferScreen();
+        document.getElementById('step-connect').classList.add('hidden');
+        document.getElementById('step-transfer').classList.remove('hidden');
       });
 
       connection.on('data', (data) => {
@@ -166,8 +137,7 @@
       });
 
       connection.on('close', () => {
-        localStorage.removeItem('drop_connected');
-        alert("انقطع الاتصال بالجهاز الآخر.");
+        alert("انقطع الاتصال.");
         location.href = window.location.pathname;
       });
     }
@@ -270,7 +240,7 @@
     function copyRoomLink() {
       const linkText = document.getElementById('peer-id-text').innerText;
       navigator.clipboard.writeText(linkText);
-      alert("تم نسخ الرابط");
+      alert("تم النسخ");
     }
 
     window.onload = initializePeer;
