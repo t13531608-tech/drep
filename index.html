@@ -3,104 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Drop - نقل الملفات المباشر (P2P)</title>
-  
-  <!-- أيقونة التبويب (Favicon): مربع أزرق وبداخله نقطة بيضاء -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2224%22 fill=%22%232563eb%22/><circle cx=%2250%22 cy=%2250%22 r=%2214%22 fill=%22ffffff%22/></svg>">
-  
-  <!-- المكتبات الخارجية -->
+  <title>Drop - نقل الملفات المباشر</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2224%22 fill=%22%232563eb%22/><circle cx=%2250%22 cy=%2250%22 r=%2212%22 fill=%22ffffff%22/></svg>">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
     body { font-family: 'Tajawal', sans-serif; }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between select-none">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
 
-  <!-- Header / الشريط العلوي -->
   <header class="bg-white border-b border-slate-200 py-4 px-6 flex justify-between items-center shadow-sm">
-    <div class="flex items-center gap-2.5">
-      <!-- الشعار الأزرق المربع مع النقطة النابضة -->
-      <div class="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center shadow-md shadow-blue-500/20 relative overflow-hidden">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center shadow-md shadow-blue-500/20 relative">
         <div class="absolute w-full h-full rounded-xl bg-blue-400 opacity-75 animate-ping"></div>
         <div class="w-2.5 h-2.5 bg-white rounded-full relative z-10"></div>
       </div>
       <span class="text-2xl font-black text-slate-900 tracking-tight">drop<span class="text-blue-600">.</span></span>
     </div>
-
-    <!-- حالة الاتصال -->
     <div class="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">
-      <span id="status-indicator" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-      <span id="status-text">اتصال P2P مباشر</span>
+      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      <span>اتصال P2P مباشر</span>
     </div>
   </header>
 
-  <!-- المحتوى الرئيسي -->
   <main class="max-w-xl mx-auto w-full p-4 my-auto">
     
-    <!-- 1. واجهة مسح الرمز والاتصال (Step 1: Connect) -->
-    <div id="step-connect" class="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 text-center space-y-6 transition-all duration-300">
-      <div class="space-y-1.5">
+    <!-- صفحة الـ QR (تظهر فقط للكمبيوتر أو المضيف إذا لم يتم الاتصال) -->
+    <div id="step-connect" class="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 text-center space-y-6">
+      <div class="space-y-2">
         <h2 class="text-xl font-bold text-slate-900">ربط الجهازين مباشرة</h2>
-        <p class="text-sm text-slate-500">امسح الرمز بكاميرا الجوال للاتصال الفوري لنقل الملفات</p>
+        <p class="text-sm text-slate-500">امسح الرمز بالكاميرا للاتصال الفوري</p>
       </div>
 
-      <!-- منطقة عرض الـ QR Code -->
       <div class="flex justify-center my-4">
         <div id="qrcode" class="p-4 bg-white rounded-2xl shadow-md border border-slate-200 min-w-[180px] min-h-[180px] flex items-center justify-center"></div>
       </div>
 
-      <!-- صندوق رابط الغرفة -->
       <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between gap-2 text-right">
-        <div class="truncate text-xs text-slate-600 font-mono" id="peer-id-text">جاري إعداد رابط الغرفة...</div>
-        <button onclick="copyRoomLink()" class="bg-white hover:bg-slate-100 text-slate-700 text-xs px-3 py-1.5 rounded-lg border border-slate-300 transition flex items-center gap-1 shrink-0 font-medium active:scale-95">
+        <div class="truncate text-xs text-slate-600 font-mono" id="peer-id-text">جاري التحميل...</div>
+        <button onclick="copyRoomLink()" class="bg-white hover:bg-slate-100 text-slate-700 text-xs px-3 py-1.5 rounded-lg border border-slate-300 transition flex items-center gap-1 shrink-0">
           <i data-lucide="copy" class="w-3.5 h-3.5"></i> نسخ
         </button>
       </div>
     </div>
 
-    <!-- 2. واجهة نقل الملفات المباشرة (Step 2: Transfer) -->
-    <div id="step-transfer" class="hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-100 space-y-6 transition-all duration-300">
-      
-      <!-- شريط معلومات الاتصال الحالي -->
+    <!-- صفحة نقل الملفات (تظهر مباشرة عند الاتصال أو التحديث بعد الاتصال) -->
+    <div id="step-transfer" class="hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-100 space-y-6">
       <div class="flex items-center justify-between border-b border-slate-100 pb-4">
         <div class="flex items-center gap-3">
           <div class="w-3 h-3 rounded-full bg-emerald-500 animate-ping"></div>
           <div>
-            <h3 class="font-bold text-slate-900">تم الاتصال بالجهاز الآخر بنجاح</h3>
-            <p class="text-xs text-slate-500">يمكنك الإرسال والاستقبال في الاتجاهين</p>
+            <h3 class="font-bold text-slate-900">تم الاتصال بنجاح</h3>
+            <p class="text-xs text-slate-500">جاهز لنقل الملفات</p>
           </div>
         </div>
-        <button onclick="resetConnection()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 active:scale-95">
-          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> جلسة جديدة
-        </button>
+        <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-medium">مشفر</span>
       </div>
 
-      <!-- منطقة سحب وإفلات الملفات -->
-      <div id="drop-zone" 
-           onclick="document.getElementById('file-input').click()" 
-           class="border-2 border-dashed border-blue-200 hover:border-blue-500 bg-blue-50/40 hover:bg-blue-50 transition-all rounded-2xl p-8 text-center cursor-pointer group relative overflow-hidden">
+      <div id="drop-zone" onclick="document.getElementById('file-input').click()" 
+           class="border-2 border-dashed border-blue-200 hover:border-blue-500 bg-blue-50/50 hover:bg-blue-50 transition-all rounded-2xl p-8 text-center cursor-pointer group">
         <input type="file" id="file-input" class="hidden" onchange="handleFileSelected(event)">
         <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
           <i data-lucide="upload-cloud" class="w-7 h-7"></i>
         </div>
-        <p class="font-bold text-slate-800 mb-1">اختر ملفاً أو اسحبه إلى هنا</p>
-        <p class="text-xs text-slate-400">يدعم الصور، الفيديو، المستندات وكافة أنواع الملفات</p>
+        <p class="font-bold text-slate-800 mb-1">اختر ملفاً أو اسحبه هنا</p>
       </div>
 
-      <!-- قائمة الملفات المتبادلة -->
-      <div id="file-list" class="space-y-3 max-h-60 overflow-y-auto pr-1"></div>
+      <div id="file-list" class="space-y-3"></div>
     </div>
 
   </main>
 
-  <!-- Footer / التذييل -->
-  <footer class="text-center py-4 text-xs text-slate-400 border-t border-slate-100">
-    تطبيق نقل الملفات المباشر Drop &copy; 2026
+  <footer class="text-center py-4 text-xs text-slate-400">
+    تطبيق نقل الملفات المباشر &copy; 2026
   </footer>
 
   <script>
@@ -109,108 +88,93 @@
     let peer = null;
     let connection = null;
 
-    // تبديل الواجهة وإخفاء صفحة QR
     function switchToTransferScreen() {
       document.getElementById('step-connect').classList.add('hidden');
       document.getElementById('step-transfer').classList.remove('hidden');
-      localStorage.setItem('drop_active_session', 'true');
+      // حفظ حالة أننا تجاوزنا مرحلة الـ QR في الذاكرة المحلية لهذا الجهاز
+      localStorage.setItem('drop_connected', 'true');
     }
 
-    // تهيئة PeerJS والربط الذكي
     function initializePeer() {
       const urlParams = new URLSearchParams(window.location.search);
       const targetRoomId = urlParams.get('room');
 
-      // إنشاء معرّف ثابت للجهاز المحلي لمنع تغيره عند الـ Refresh
-      let localPeerId = localStorage.getItem('drop_device_id');
-      if (!localPeerId) {
-        localPeerId = 'drop-' + Math.random().toString(36).substring(2, 10);
-        localStorage.setItem('drop_device_id', localPeerId);
+      // تحديد معرف ثابت للجهاز الحالي لتثبيت الجلسة
+      let myId = localStorage.getItem('drop_my_id');
+      if (!myId) {
+        myId = 'drop-' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('drop_my_id', myId);
       }
 
-      // إذا كان هناك معرف غرفة ممرر (الجوال ينضم للكمبيوتر)
-      peer = targetRoomId ? new Peer() : new Peer(localPeerId);
+      // إنشاء الاتصال
+      peer = targetRoomId ? new Peer() : new Peer(myId);
 
       peer.on('open', (id) => {
         if (targetRoomId) {
-          // جهاز ينضم لغرفة كمبيوتر
-          document.getElementById('peer-id-text').innerText = "جاري الاتصال بالكمبيوتر...";
+          // إذا كان الجهاز هو الجوال الذي مسح الرمز، يتصل فوراً بالكمبيوتر وينتقل لصفحة النقل
+          document.getElementById('peer-id-text').innerText = "جاري الاتصال...";
           connectToDevice(targetRoomId);
         } else {
-          // الجهاز الرئيسي (الكمبيوتر)
+          // إذا كان الكمبيوتر
           const roomUrl = `${window.location.origin}${window.location.pathname}?room=${id}`;
-          
-          // الحفاظ على معرف الغرفة في عنوان الـ URL عند تحديث الصفحة
           window.history.replaceState(null, null, `?room=${id}`);
           document.getElementById('peer-id-text').innerText = roomUrl;
-
-          // توليد الـ QR Code
-          const qrContainer = document.getElementById("qrcode");
-          qrContainer.innerHTML = "";
-          new QRCode(qrContainer, {
+          
+          document.getElementById("qrcode").innerHTML = "";
+          new QRCode(document.getElementById("qrcode"), {
             text: roomUrl,
             width: 160,
             height: 160
           });
 
-          // إذا كان المتصفح مُتصل مسبقاً، التثبيت في صفحة نقل الملفات عند التحديث
-          if (localStorage.getItem('drop_active_session') === 'true') {
+          // إذا كان قد سبق وتم الاتصال مسبقاً قبل التحديث، نظهره في صفحة النقل مباشرة
+          if (localStorage.getItem('drop_connected') === 'true') {
             switchToTransferScreen();
           }
         }
       });
 
-      // استقبال الاتصال الوارد من الجهاز الآخر
       peer.on('connection', (conn) => {
         connection = conn;
         setupConnectionEvents();
         switchToTransferScreen();
       });
 
-      // إشعار خطأ
       peer.on('error', (err) => {
         if (err.type === 'unavailable-id') {
-          localStorage.removeItem('drop_device_id');
+          localStorage.removeItem('drop_my_id');
           location.reload();
         }
       });
     }
 
-    // إنشاء اتصال مباشر
     function connectToDevice(targetId) {
       connection = peer.connect(targetId);
       setupConnectionEvents();
       switchToTransferScreen();
     }
 
-    // إدارة أحداث الاتصال والحزمة المتبادلة
     function setupConnectionEvents() {
       connection.on('open', () => {
         switchToTransferScreen();
       });
 
-      // استقبال الملف المباشر
       connection.on('data', (data) => {
-        if (data && data.type === 'file') {
+        if (data.type === 'file') {
           handleIncomingFile(data);
         }
       });
 
       connection.on('close', () => {
-        localStorage.removeItem('drop_active_session');
+        localStorage.removeItem('drop_connected');
         alert("انقطع الاتصال بالجهاز الآخر.");
+        location.href = window.location.pathname;
       });
     }
 
-    // إرسال الملف المباشر
     function handleFileSelected(event) {
       const file = event.target.files[0];
-      if (!file) return;
-
-      if (!connection) {
-        alert("تنبيه: أنت غير متصل بجهاز آخر حالياً.");
-        return;
-      }
+      if (!file || !connection) return;
 
       const reader = new FileReader();
       const fileCardId = 'file-' + Date.now();
@@ -232,7 +196,6 @@
       reader.readAsArrayBuffer(file);
     }
 
-    // معالجة الملف المستلم
     function handleIncomingFile(data) {
       const fileCardId = 'file-' + Date.now();
       renderFileCard(fileCardId, data.name, formatFileSize(data.size), 'in');
@@ -243,7 +206,6 @@
       updateFileProgress(fileCardId, 100, false, fileDownloadUrl, data.name);
     }
 
-    // إنشاء بطاقة عارض الملفات
     function renderFileCard(id, fileName, fileSize, direction) {
       const listContainer = document.getElementById('file-list');
       const isOutgoing = direction === 'out';
@@ -271,7 +233,6 @@
       lucide.createIcons();
     }
 
-    // تحديث شريط التقدم وزر الحفظ
     function updateFileProgress(id, percentage, isOutgoing, downloadUrl = null, fileName = '') {
       const cardElement = document.getElementById(id);
       if (!cardElement) return;
@@ -289,8 +250,8 @@
           const downloadBtn = document.createElement('a');
           downloadBtn.href = downloadUrl;
           downloadBtn.download = fileName;
-          downloadBtn.className = 'text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg flex items-center gap-1 font-medium transition active:scale-95';
-          downloadBtn.innerHTML = `<i data-lucide="download" class="w-3.5 h-3.5"></i> حفظ الملف`;
+          downloadBtn.className = 'text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg flex items-center gap-1 font-medium transition';
+          downloadBtn.innerHTML = `<i data-lucide="download" class="w-3.5 h-3.5"></i> حفظ`;
           
           actionArea.appendChild(downloadBtn);
           lucide.createIcons();
@@ -298,30 +259,6 @@
       }
     }
 
-    // تحسين وتفعيل السحب والإفلات الجمالي (Drag and Drop Events)
-    const dropZone = document.getElementById('drop-zone');
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropZone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        dropZone.classList.add('border-blue-500', 'bg-blue-100/50');
-      }, false);
-    });
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropZone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('border-blue-500', 'bg-blue-100/50');
-      }, false);
-    });
-    dropZone.addEventListener('drop', (e) => {
-      const dt = e.dataTransfer;
-      const files = dt.files;
-      if (files.length > 0) {
-        document.getElementById('file-input').files = files;
-        handleFileSelected({ target: { files: files } });
-      }
-    });
-
-    // أدوات مساعدة
     function formatFileSize(bytes) {
       if (bytes === 0) return '0 Bytes';
       const k = 1024;
@@ -333,15 +270,9 @@
     function copyRoomLink() {
       const linkText = document.getElementById('peer-id-text').innerText;
       navigator.clipboard.writeText(linkText);
-      alert("تم نسخ رابط الغرفة المباشر!");
+      alert("تم نسخ الرابط");
     }
 
-    function resetConnection() {
-      localStorage.removeItem('drop_active_session');
-      window.location.href = window.location.pathname;
-    }
-
-    // تشغيل التطبيق
     window.onload = initializePeer;
   </script>
 </body>
