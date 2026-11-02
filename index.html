@@ -87,6 +87,13 @@
     let peer = null;
     let connection = null;
 
+    // دالة الانتقال لصفحة نقل الملفات وتثبيت الحالة في الذاكرة المحلية
+    function showTransferScreen() {
+      document.getElementById('step-connect').classList.add('hidden');
+      document.getElementById('step-transfer').classList.remove('hidden');
+      localStorage.setItem('drop_in_transfer', 'true');
+    }
+
     function initializePeer() {
       const urlParams = new URLSearchParams(window.location.search);
       const targetRoomId = urlParams.get('room');
@@ -107,11 +114,17 @@
             height: 160
           });
         }
+
+        // التحقق مما إذا كان المستخدم في صفحة نقل الملفات قبل التحديث لإبقائه فيها
+        if (localStorage.getItem('drop_in_transfer') === 'true') {
+          showTransferScreen();
+        }
       });
 
       peer.on('connection', (conn) => {
         connection = conn;
         setupConnectionEvents();
+        showTransferScreen();
       });
 
       peer.on('error', () => {
@@ -122,12 +135,12 @@
     function connectToDevice(targetId) {
       connection = peer.connect(targetId);
       setupConnectionEvents();
+      showTransferScreen();
     }
 
     function setupConnectionEvents() {
       connection.on('open', () => {
-        document.getElementById('step-connect').classList.add('hidden');
-        document.getElementById('step-transfer').classList.remove('hidden');
+        showTransferScreen();
       });
 
       connection.on('data', (data) => {
@@ -137,6 +150,7 @@
       });
 
       connection.on('close', () => {
+        localStorage.removeItem('drop_in_transfer');
         alert("انقطع الاتصال.");
         location.href = window.location.pathname;
       });
