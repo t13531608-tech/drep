@@ -89,18 +89,33 @@
 
     function initializePeer() {
       const urlParams = new URLSearchParams(window.location.search);
-      const targetRoomId = urlParams.get('room');
+      let targetRoomId = urlParams.get('room');
 
-      peer = new Peer();
+      // 1. استرجاع أو تثبيت معرّف الجهاز لتثبيت الغرفة حتى بعد التحديث
+      let savedPeerId = localStorage.getItem('drop_peer_id');
+      if (!savedPeerId) {
+        savedPeerId = 'drop-' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('drop_peer_id', savedPeerId);
+      }
+
+      // إذا كان هناك معرف ممرر في URL (الجوال ينضم للكمبيوتر) نستخدمه، وإلا نستخدم معرف الجهاز الحالي
+      peer = targetRoomId ? new Peer() : new Peer(savedPeerId);
 
       peer.on('open', (id) => {
         if (targetRoomId) {
+          // الجهاز الانضمامي (الجوال)
           document.getElementById('peer-id-text').innerText = "جاري الاتصال...";
           connectToDevice(targetRoomId);
         } else {
+          // الجهاز المضيف (الكمبيوتر)
           const roomUrl = `${window.location.origin}${window.location.pathname}?room=${id}`;
+          
+          // تحديث رابط الصفحة في المتصفح دون إعادة التحميل ليبقى ثابت عند الـ Refresh
+          window.history.replaceState(null, null, `?room=${id}`);
+          
           document.getElementById('peer-id-text').innerText = roomUrl;
           
+          document.getElementById("qrcode").innerHTML = ""; // تنظيف الكود القديم
           new QRCode(document.getElementById("qrcode"), {
             text: roomUrl,
             width: 160,
@@ -114,8 +129,13 @@
         setupConnectionEvents();
       });
 
-      peer.on('error', () => {
-        alert("حدث خطأ في الاتصال.");
+      peer.on('error', (err) => {
+        console.warn("خطأ في الاتصال:", err);
+        // في حال كان المعرف مستخدماً مسبقاً، أنشئ معرفاً جديداً تلقائياً
+        if (err.type === 'unavailable-id') {
+          localStorage.removeItem('drop_peer_id');
+          location.reload();
+        }
       });
     }
 
@@ -137,8 +157,7 @@
       });
 
       connection.on('close', () => {
-        alert("انقطع الاتصال.");
-        location.href = window.location.pathname;
+        alert("انقطع الاتصال بالجهاز الآخر.");
       });
     }
 
@@ -240,7 +259,7 @@
     function copyRoomLink() {
       const linkText = document.getElementById('peer-id-text').innerText;
       navigator.clipboard.writeText(linkText);
-      alert("تم النسخ");
+      alert("تم نسخ الرابط");
     }
 
     window.onload = initializePeer;
